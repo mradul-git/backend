@@ -1,0 +1,16 @@
+{
+  "name": "22-11",
+  "version": "1.0.0",
+  "description": "a backend at mongo",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascrript",
+    "backend",
+    "chai"
+  ],
+  "author": "mradul",
+  "license": "ISC"
+}
