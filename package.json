@@ -2,9 +2,10 @@
   "name": "22-11",
   "version": "1.0.0",
   "description": "a backend at mongo",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon src/index.js"
   },
   "keywords": [
     "javascrript",
@@ -12,5 +13,9 @@
     "chai"
   ],
   "author": "mradul",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.7",
+    "prettier": "^3.3.3"
+  }
 }
