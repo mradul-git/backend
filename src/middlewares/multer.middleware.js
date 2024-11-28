@@ -14,3 +14,10 @@ const storage = multer.diskStorage({
 export const upload = multer({ 
     storage, 
 })
+
+const uploadFields = upload.fields([
+  { name: 'avatar', maxCount: 1 },  // Expect one avatar file
+  { name: 'coverImage', maxCount: 1 }  // Expect one cover image file (optional)
+]);
+
+export { uploadFields };
