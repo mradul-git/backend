@@ -4,6 +4,27 @@ import {User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 
+const generateAccessAndRefreeshTokens = async(userId)=>{
+    try{
+       const user =  await User.findById(userId)
+       const accessToken =  user.generateAccessToken()
+       const refreshToken = user.generateRefreshToken()
+
+
+       user.refreshToken = refreshToken
+      await user.save({validateBeforeSave : false})   //mongodb se bnke aaya he to save method lga skte he
+      
+      return {accessToken,refreshToken}
+
+
+    }
+    catch (error){
+        throw new ApiError(500, "something went wrong while generating refresh and acess token")
+
+    }
+
+}
+
 const registerUser = asyncHandler(async(req,res) => {
     //get user details from frontend
     //validation - not empty
@@ -28,7 +49,7 @@ const registerUser = asyncHandler(async(req,res) => {
           throw new ApiError(400,"all fields are reqiured")
    }
 
-   console.log("files",req.files);
+   //console.log("files",req.files);
 
 
    const existedUser = await User.findOne({
@@ -67,7 +88,7 @@ const registerUser = asyncHandler(async(req,res) => {
         }
     }
 
-    console.log(req.files.avatar);
+    //console.log(req.files.avatar);
 
 
     const newUser = new User({
@@ -93,6 +114,86 @@ const registerUser = asyncHandler(async(req,res) => {
     );
 });
 
+// loginuser
+
+// req body -> data lekr aana he
+// username or login
+// find user
+// password check
+// if pass match - > generate accss and refresh token
+// send cookies( inme tokens he)
+
+
+// koi field khali nhi honi chahiye
+// match hona chahiye
+
+
+const loginUser = asyncHandler(async(req,res) =>{
+
+    const {email,username,password} = req.body
+
+    if(!username || !email){
+        throw new ApiError(400,"username or email required")
+    }
+
+   const user =  await User.findOne({
+        $or:[{username} , {email}]
+    })
+
+    if(!user){
+        throw new ApiError(404 , "user does not exist" )
+
+    }
+
+   const isPasswordValid =  await user.isPasswordCorrect(password)
+ 
+   if(!isPasswordValid){
+    throw new ApiError(401 , "wrong password" )
+
+}
+
+ const {accessToken,refreshToken} = await generateAccessAndRefreeshTokens(user._id)
+
+ //object me update krna he ya database 
+ //query marni he decide krna pdega
+
+
+ //optional he - 
+   const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
+
+   //cookies
+
+   //taki sirf server se modify ho aur hr koi frontend se modify na kre
+     const options ={
+        httpOnly: true,
+        secure: true
+     }
+
+     return res.
+     status(200)
+     .cookie("accessToken", accessToken,options)
+     .cookie("refreshToken",refreshToken,options)
+     .json(
+        new ApiResponse(
+            200,{
+                user:loggedInUser,accessToken,
+                refreshToken  // jb user at ya rt ko save krna chahra ho
+            },
+            "User logged in successfully"
+        )
+     )
+     
+    })
+
+   const logoutUser = asyncHandler(async(req,res)=>{
+     //cookies aur refreshtoken clear krna pdega
+
+   })
+
 //console.log(req.files , "errror")
 
-export {registerUser} 
+export {
+    registerUser,
+    loginUser,
+    logoutUser
+} 
